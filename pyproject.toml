@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "signal-research-platform"
+version = "0.1.0"
+description = "Multi-strategy signal research platform (PRD v2) — Phase 0"
+requires-python = ">=3.11"
+dependencies = [
+    "duckdb>=1.0",
+    "pandas>=2.0",
+    "pyyaml>=6.0",
+    "requests>=2.31",
+    "exchange-calendars>=4.5",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools]
+# Listed explicitly. The repo uses the flat layout from PRD §8.2, where
+# setuptools cannot guess which top-level directories are packages and refuses
+# to install rather than choose wrongly.
+packages = ["config", "store", "ingest", "screens", "backtest"]
+py-modules = ["cli"]
+
+[tool.pytest.ini_options]
+# Lets tests import `store`, `backtest` and friends without an install step.
+# One less thing for the owner to get wrong when re-cloning the repo.
+pythonpath = ["."]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]

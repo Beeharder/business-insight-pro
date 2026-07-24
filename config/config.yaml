@@ -1,0 +1,93 @@
+# Every threshold in the PRD lives here, not in code.
+# Section numbers refer to the PRD.
+#
+# Rule from PRD §13: loosen thresholds only on backtest evidence, never on
+# instinct. Each change to this file should be a separate commit whose message
+# says which backtest justified it.
+
+universe:                       # §4.1
+  min_market_cap_usd: 10_000_000_000
+  min_avg_dollar_volume_usd: 50_000_000
+  avg_dollar_volume_window_days: 30
+  exclude_adr: true
+  exclude_spac: true
+  min_years_since_ipo: 2
+  allowed_security_types: [common_stock]
+
+survivability:                  # §4.2
+  min_runway_months: 18
+  debt_maturity_window_months: 24
+  require_positive_fcf_or_runway: true
+  reject_on_going_concern: true
+  reject_on_default_or_covenant_breach: true
+  reject_on_delisting_notice: true
+
+strategy_a:                     # §5
+  shock:                        # §5.1
+    price_decline_pct: 0.12
+    lookback_trading_days: 10
+    sector_relative_underperf_pp: 0.08
+    news_volume_multiple: 3.0
+    news_baseline_days: 90
+  decay:                        # §5.2
+    article_volume_drop_from_peak: 0.60
+    drop_sustained_days: 3
+    no_new_lows_sessions: 3
+    watch_expiry_days: 30
+  llm:                          # §5.5
+    min_confidence: 0.70
+    reject_anger_targets: [business_model]
+    reject_overlap: [high]
+  holding_period_weeks:         # §5.4
+    person: [2, 4]
+    product: [4, 8]
+
+strategy_b:                     # §6
+  holding_period_weeks: 4
+  b1_risk_factor_diff:
+    enabled: true
+    min_severity: 3
+  b2_tone_shift:
+    enabled: true               # set false if transcripts unavailable (§8.1)
+    prior_calls_compared: 4
+  b3_guidance_change:
+    enabled: true
+
+positions:                      # §7.1
+  entry_timing: next_open
+  size_pct_of_portfolio: 0.05
+  exit:
+    a_recovery_pct_of_preshock: 0.95
+    b_profit_target_pct: 0.10
+    stop_loss_pct: -0.18
+
+limits:                         # §7.2
+  max_position_pct: 0.05
+  max_concurrent_positions: 8
+  max_sector_exposure_pct: 0.25
+  max_new_positions_per_day: 2
+  portfolio_drawdown_kill_switch_pct: -0.10
+  earnings_blackout_days: 3     # Strategy A only
+  refuse_on_stale_data: true
+  max_data_staleness_days: 1
+
+regime:                         # §7.3
+  spy_below_sma_days: 200
+  vix_ceiling: 30
+  clear_sessions_required: 5
+
+backtest:
+  starting_cash_usd: 100_000.00
+  benchmark_ticker: SPY
+  calendar: XNYS
+  # Phase 0 runs frictionless so the engine can be proven exactly equal to
+  # buy-and-hold. Turn these on in Phase 1 when measuring real returns.
+  commission_per_share_usd: 0.0
+  slippage_bps: 0.0
+
+data:
+  db_path: data/market.duckdb
+  log_dir: logs
+  # Wall-clock time a daily bar becomes knowable. Bars are stamped
+  # available_at = session_date at this time, US/Eastern. §8.3
+  bar_available_at_et: "16:00"

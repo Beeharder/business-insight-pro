@@ -1,0 +1,30 @@
+# Secrets — never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local data store
+/data/*.duckdb
+/data/*.duckdb.wal
+/data/raw/
+
+# Decision traces and run logs
+/logs/*
+!/logs/.gitkeep
+
+# Generated reports
+/reporting/out/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# OS
+.DS_Store
