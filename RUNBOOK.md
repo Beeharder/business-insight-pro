@@ -102,13 +102,27 @@ explains each one and where to get it.
 ingest commands.** You can run the demo and the whole test suite without any
 keys at all.
 
-Two things worth knowing:
+### Getting the Alpaca keys — exactly where to click
 
-- Use **paper** keys from Alpaca, not live ones. Paper keys cannot place a real
-  order even by accident.
-- `EDGAR_USER_AGENT` must contain a real contact email, like
-  `Jane Smith jane@example.com`. The SEC blocks anonymous clients, and the block
-  is not obvious when it happens.
+1. Sign up or log in at <https://alpaca.markets>
+2. Switch the dashboard to **Paper**, not Live. Keys are separate for each, and
+   a Live key would point this at real money.
+3. On the **Home** tab, find the **API Keys** section
+4. Click **Generate New Keys**
+5. Copy both values into `.env`. The secret is shown **once** — if you lose it,
+   generate a fresh pair rather than hunting for it.
+
+Those two strings are the whole of it. You do **not** need OAuth, access tokens,
+a `client_id`, or anything from `authx.alpaca.markets`. That is Alpaca's Broker
+API, intended for companies running their own brokerage on Alpaca's
+infrastructure — a different product that is easy to land on by accident when
+searching the documentation.
+
+### The SEC identifier
+
+`EDGAR_USER_AGENT` is not a signup and not a password. It is your name and a
+real email address, like `Jane Smith jane@example.com`. The SEC blocks anonymous
+automated clients, and the block is not obvious when it happens.
 
 If you ever think a key has leaked, revoke it at the provider first and worry
 about the file second.
