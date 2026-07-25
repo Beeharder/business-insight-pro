@@ -68,7 +68,9 @@ def load_config(path: str | Path | None = None) -> Config:
     config_path = Path(path) if path else DEFAULT_CONFIG_PATH
     if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")
-    with config_path.open() as fh:
+    # encoding is explicit on purpose — see init_schema in store/db.py. config.yaml
+    # has section marks in its comments and would fail to load on Windows without it.
+    with config_path.open(encoding="utf-8") as fh:
         data = yaml.safe_load(fh) or {}
     return Config(data)
 
@@ -82,7 +84,9 @@ def _load_dotenv(path: Path) -> None:
     """
     if not path.exists():
         return
-    for raw_line in path.read_text().splitlines():
+    # A name with an accent in EDGAR_USER_AGENT is enough to break this on
+    # Windows without the explicit encoding.
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
         line = raw_line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue

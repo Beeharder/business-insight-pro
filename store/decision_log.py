@@ -70,7 +70,9 @@ class DecisionLog:
             if not directory.is_absolute():
                 directory = REPO_ROOT / directory
             directory.mkdir(parents=True, exist_ok=True)
-            self._jsonl = (directory / f"{self.run_id}.jsonl").open("a", buffering=1)
+            self._jsonl = (directory / f"{self.run_id}.jsonl").open(
+                "a", buffering=1, encoding="utf-8"
+            )
 
         self.conn.execute(
             "INSERT INTO runs (run_id, mode, started_at, status, as_of_date) VALUES (?,?,?,?,?)",

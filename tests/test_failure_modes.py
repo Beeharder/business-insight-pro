@@ -335,7 +335,7 @@ def test_the_jsonl_trace_survives_a_crash(tmp_path):
 
     written = list(tmp_path.glob("*.jsonl"))
     assert len(written) == 1
-    contents = written[0].read_text()
+    contents = written[0].read_text(encoding="utf-8")
     assert "before crash" in contents
     assert "run_finished" in contents
 

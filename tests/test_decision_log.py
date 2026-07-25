@@ -154,7 +154,7 @@ def test_the_jsonl_copy_mirrors_the_database(log_conn):
 
     import json
     lines = [json.loads(line) for line in
-             next(tmp.glob("*.jsonl")).read_text().strip().splitlines()]
+             next(tmp.glob("*.jsonl")).read_text(encoding="utf-8").strip().splitlines()]
     kinds = [line["kind"] for line in lines]
     assert "screen" in kinds
     assert "order" in kinds

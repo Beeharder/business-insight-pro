@@ -47,8 +47,17 @@ def connect(
 
 
 def init_schema(conn: duckdb.DuckDBPyConnection) -> None:
-    """Apply schema.sql. Safe to run repeatedly — every statement is IF NOT EXISTS."""
-    conn.execute(SCHEMA_PATH.read_text())
+    """Apply schema.sql. Safe to run repeatedly — every statement is IF NOT EXISTS.
+
+    The encoding is stated explicitly, and must stay that way. Python picks the
+    operating system's default text encoding when you leave it out, which is
+    UTF-8 on Mac and Linux but not on Windows. schema.sql contains section marks
+    and em dashes in its comments, so omitting it makes this line raise
+    UnicodeDecodeError on a Windows machine and nowhere else — the first command
+    a new Windows user runs would fail with an error that says nothing about the
+    real cause.
+    """
+    conn.execute(SCHEMA_PATH.read_text(encoding="utf-8"))
 
 
 def table_counts(conn: duckdb.DuckDBPyConnection) -> dict[str, int]:

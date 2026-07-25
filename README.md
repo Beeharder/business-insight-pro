@@ -26,8 +26,11 @@ python3 -m venv .venv
 .venv/bin/python cli.py init-db      # create the local database
 .venv/bin/python cli.py seed-demo    # synthetic data — no API keys needed
 .venv/bin/python cli.py verify       # prove the backtester is correct
-.venv/bin/python -m pytest           # 123 tests, about 40 seconds
+.venv/bin/python -m pytest           # 131 tests, about a minute
 ```
+
+On Windows, swap `.venv/bin/python` for `.venv\Scripts\python` throughout —
+[RUNBOOK.md](RUNBOOK.md) gives both forms for every command.
 
 `verify` must print `PASS — the engine reproduces buy-and-hold exactly.`
 That is the Phase 0 exit criterion. Until it passes, no backtest result from

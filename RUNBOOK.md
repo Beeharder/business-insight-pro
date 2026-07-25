@@ -10,19 +10,60 @@ strategy exists yet, nothing trades, and nothing connects to a broker. See
 
 ---
 
+## Before you start: which set of commands to use
+
+Every command below is given twice, because Windows spells things differently
+from Mac and Linux. Use the row that matches your machine and ignore the other.
+
+|  | Windows | Mac / Linux |
+|---|---|---|
+| Terminal app | **PowerShell** (press Start, type "PowerShell") | **Terminal** |
+| Run Python | `.venv\Scripts\python` | `.venv/bin/python` |
+| Copy a file | `copy` | `cp` |
+| Delete a file | `del` | `rm` |
+
+The only thing you have to get right is the `.venv\Scripts\` versus `.venv/bin/`
+part. Everything after it is identical.
+
+**If you are working in a cloud session on claude.ai, use the Mac / Linux
+commands** — the cloud machine runs Linux, regardless of what you are typing on.
+
+---
+
 ## 1. One-time setup
 
-You need Python 3.11 or newer. To check, open a terminal and type:
+You need Python 3.11 or newer.
+
+**Windows.** Install from python.org, **not** the Microsoft Store — the Store
+version is sandboxed in ways that cause confusing failures later. On the very
+first screen of the installer, tick **"Add python.exe to PATH"** before clicking
+Install. It is easy to miss and skipping it is the single most common way this
+whole process goes wrong.
+
+To check it worked, open PowerShell and type:
+
+```powershell
+python --version
+```
+
+**Mac / Linux.** Type:
 
 ```bash
 python3 --version
 ```
 
-If that prints something lower than 3.11, or an error, install Python from
-python.org first.
+Either way, if that prints something lower than 3.11, or an error, fix that
+before going further.
 
-Then, from the project folder:
+Now set the project up. In your terminal, navigate to the project folder, then:
 
+**Windows**
+```powershell
+python -m venv .venv
+.venv\Scripts\pip install -e ".[dev]"
+```
+
+**Mac / Linux**
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
@@ -32,9 +73,10 @@ python3 -m venv .venv
 this project's own copy of Python and its libraries, so nothing here can break
 anything else on your computer. The second installed what the project needs.
 
-From here on, every command starts with `.venv/bin/python`. That is how you say
-"use *this project's* Python". If you ever see `ModuleNotFoundError`, it is
-almost always because `.venv/bin/` got left off the front.
+From here on, every command starts with `.venv\Scripts\python` (Windows) or
+`.venv/bin/python` (Mac/Linux). That is how you say "use *this project's*
+Python". If you ever see `ModuleNotFoundError`, it is almost always because that
+prefix got left off the front.
 
 ---
 
@@ -43,6 +85,12 @@ almost always because `.venv/bin/` got left off the front.
 Keys live in a file called `.env`, which is deliberately excluded from git and
 will never be committed. Create it from the template:
 
+**Windows**
+```powershell
+copy .env.example .env
+```
+
+**Mac / Linux**
 ```bash
 cp .env.example .env
 ```
@@ -65,6 +113,26 @@ Two things worth knowing:
 If you ever think a key has leaked, revoke it at the provider first and worry
 about the file second.
 
+### If you are running in a cloud session instead
+
+Cloud sessions are wiped between runs, so a `.env` file you create there will
+not survive. Put your credentials in the **environment variables** box in the
+environment's settings dialog instead — the code reads real environment
+variables in preference to the `.env` file, so no other change is needed.
+
+You will also need to allow the data websites through, since cloud environments
+block them by default. In the same settings dialog set **Network access** to
+**Custom** and add:
+
+```
+*.sec.gov
+*.alpaca.markets
+```
+
+Leave "Also include default list of common package managers" ticked, or GitHub
+and the Python package sites get cut off too. Settings only apply to **new**
+sessions, so start a fresh one afterwards.
+
 ---
 
 ## 3. Starting the system
@@ -74,6 +142,14 @@ run one at a time.
 
 ### See it work, with no keys
 
+**Windows**
+```powershell
+.venv\Scripts\python cli.py init-db
+.venv\Scripts\python cli.py seed-demo
+.venv\Scripts\python cli.py verify
+```
+
+**Mac / Linux**
 ```bash
 .venv/bin/python cli.py init-db
 .venv/bin/python cli.py seed-demo
@@ -96,8 +172,9 @@ computed from it says anything about any strategy.
 
 ### Check the real data sources
 
-```bash
-.venv/bin/python cli.py check-sources
+```
+.venv\Scripts\python cli.py check-sources      (Windows)
+.venv/bin/python cli.py check-sources          (Mac / Linux)
 ```
 
 This is the other half of Phase 0. It reports whether each source answers, and
@@ -107,8 +184,9 @@ floor on how far back Strategy A can ever be tested.
 
 ### Look at one company on one day
 
-```bash
-.venv/bin/python cli.py screen --ticker EXRO --date 2023-08-01
+```
+.venv\Scripts\python cli.py screen --ticker EXRO --date 2023-08-01   (Windows)
+.venv/bin/python cli.py screen --ticker EXRO --date 2023-08-01       (Mac / Linux)
 ```
 
 Shows every size, liquidity and survivability check with its reasoning. Useful
@@ -123,6 +201,13 @@ database file, so interrupting one cannot corrupt anything or place an order.
 
 To throw everything away and start clean:
 
+**Windows**
+```powershell
+del data\market.duckdb
+.venv\Scripts\python cli.py init-db
+```
+
+**Mac / Linux**
 ```bash
 rm data/market.duckdb
 .venv/bin/python cli.py init-db
@@ -139,40 +224,62 @@ Two copies of every decision are kept, on purpose.
 
 **The database copy** — queryable, and what the CLI reads:
 
-```bash
-.venv/bin/python cli.py logs --ticker NKE --date 2024-03-11
+```
+.venv\Scripts\python cli.py logs --ticker NKE --date 2024-03-11   (Windows)
+.venv/bin/python cli.py logs --ticker NKE --date 2024-03-11       (Mac / Linux)
 ```
 
 Shows every screen that ran on that company that day, whether it passed, and
 the numbers behind the verdict.
 
 **The plain-text copy** — one file per run in `logs/`, written line by line as
-things happen:
+things happen. To list them newest first:
 
+**Windows**
+```powershell
+dir logs /O-D
+```
+
+**Mac / Linux**
 ```bash
 ls -lt logs/ | head
 ```
 
-The newest file is the most recent run. This copy exists because the database
-copy is only useful if the program got far enough to save its work. If a run
-dies halfway, the text file is what tells you where.
+This copy exists because the database copy is only useful if the program got far
+enough to save its work. If a run dies halfway, the text file is what tells you
+where.
 
 To see what the system has and how fresh it is:
 
-```bash
-.venv/bin/python cli.py status
+```
+.venv\Scripts\python cli.py status   (Windows)
+.venv/bin/python cli.py status       (Mac / Linux)
 ```
 
 ---
 
-## 6. The three most likely failure messages
+## 6. The four most likely failure messages
+
+### Windows: "python is not recognized as the name of a cmdlet"
+
+**Means:** Windows cannot find Python. Almost always the "Add python.exe to
+PATH" box was left unticked during installation.
+
+**Fix:** re-run the python.org installer, choose **Modify**, and make sure that
+box is ticked. Then close PowerShell entirely and open a new one — an already
+open terminal will not notice the change.
+
+If you installed from the Microsoft Store, uninstall it and use the python.org
+installer instead. The Store version behaves differently in ways that cause
+problems later.
 
 ### "ModuleNotFoundError: No module named 'duckdb'"
 
 **Means:** the command ran with your computer's Python instead of the project's.
 
-**Fix:** start the command with `.venv/bin/python`, not `python`. If it still
-fails, re-run the install step in section 1.
+**Fix:** start the command with `.venv\Scripts\python` on Windows, or
+`.venv/bin/python` on Mac and Linux — not plain `python`. If it still fails,
+re-run the install step in section 1.
 
 ### "ERROR: EDGAR_USER_AGENT is not set, and it is needed to..."
 
@@ -180,7 +287,7 @@ fails, re-run the install step in section 1.
 one and what it is for.
 
 **Fix:** open `.env` and fill in the named value. If the file does not exist,
-`cp .env.example .env` first.
+create it from the template as shown in section 2.
 
 This is the system working as intended. It refuses to run half-configured
 rather than guessing and carrying on.
@@ -192,7 +299,9 @@ between them.
 
 **Fix:** usually nothing — try again in ten minutes. If it persists, check the
 provider's status page. If it says `401` or `403`, the key is wrong or expired
-rather than the service being down; retrying will not help.
+rather than the service being down; retrying will not help. In a cloud session,
+a `403` usually means the website is not on the environment's allowed list —
+see the end of section 2.
 
 The system stops rather than continuing with partial data. That matters more
 than it sounds: an empty news result would look exactly like a quiet news day,
@@ -207,12 +316,7 @@ Once the daily cycle exists in Phase 4, the check will be: **a digest email
 arrives every trading day, even when nothing happened.** Silence is the alert.
 No email means something broke.
 
-Today, in Phase 0, the equivalent check is:
-
-```bash
-.venv/bin/python cli.py status
-```
-
+Today, in Phase 0, the equivalent check is the `status` command from section 5.
 Look at "Recent runs". A healthy run shows status `ok` and a `finished_at` time.
 A run showing `failed` has its error recorded next to it. A run stuck on
 `running` from hours ago means the process was killed — check the newest file
@@ -222,11 +326,12 @@ in `logs/` for the last thing it managed to write.
 
 ## 8. Running the tests
 
-```bash
-.venv/bin/python -m pytest
+```
+.venv\Scripts\python -m pytest   (Windows)
+.venv/bin/python -m pytest       (Mac / Linux)
 ```
 
-Takes about 40 seconds. Everything should pass. Run this after any change,
+Takes about a minute. Everything should pass. Run this after any change,
 including ones that look harmless — particularly changes to anything in
 `store/`, which is where a mistake does the most damage and shows the fewest
 symptoms.
@@ -234,6 +339,11 @@ symptoms.
 If a test fails, its name says what broke. `test_exro_is_rejected` failing means
 the safety gate stopped catching a company the PRD names by hand as one it must
 reject.
+
+The tests in `tests/test_cross_platform.py` exist specifically to catch bugs
+that only appear on Windows. They work by forcing the same conditions on
+whatever machine they run on, so a problem that would only show up on your
+laptop still gets caught here.
 
 ---
 
